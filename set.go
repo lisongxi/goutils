@@ -1,9 +1,12 @@
 package goutils
 
-import "sync"
+import (
+	"reflect"
+	"sync"
+)
 
 type Set interface {
-	Add(element interface{})
+	Add(element interface{}) bool
 	Remove(element interface{})
 	Contains(element interface{}) bool
 	Size() int
@@ -16,17 +19,30 @@ type Set interface {
 
 type GenericSet struct {
 	sync.RWMutex
+	elemType reflect.Type
 	elements map[interface{}]struct{}
 }
 
 func NewSet() *GenericSet {
-	return &GenericSet{elements: make(map[interface{}]struct{})}
+	return &GenericSet{
+		elements: make(map[interface{}]struct{}),
+		elemType: nil,
+	}
 }
 
-func (s *GenericSet) Add(element interface{}) {
+func (s *GenericSet) Add(element interface{}) bool {
 	s.Lock()
 	defer s.Unlock()
-	s.elements[element] = struct{}{}
+	if len(s.elements) == 0 {
+		s.elements[element] = struct{}{}
+		s.elemType = reflect.TypeOf(element)
+	} else if reflect.TypeOf(element) != s.elemType {
+		return false
+	}
+	if _, exists := s.elements[element]; !exists {
+		s.elements[element] = struct{}{}
+	}
+	return true
 }
 
 func (s *GenericSet) Remove(element interface{}) {
