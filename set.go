@@ -19,24 +19,28 @@ type Set interface {
 
 type GenericSet struct {
 	sync.RWMutex
-	elemType reflect.Type
+	setType  reflect.Type
 	elements map[interface{}]struct{}
 }
 
 func NewSet() *GenericSet {
 	return &GenericSet{
 		elements: make(map[interface{}]struct{}),
-		elemType: nil,
+		setType:  nil,
 	}
 }
 
 func (s *GenericSet) Add(element interface{}) bool {
 	s.Lock()
 	defer s.Unlock()
+	elementType := reflect.TypeOf(element)
 	if len(s.elements) == 0 {
+		if !elementType.Comparable() {
+			return false
+		}
 		s.elements[element] = struct{}{}
-		s.elemType = reflect.TypeOf(element)
-	} else if reflect.TypeOf(element) != s.elemType {
+		s.setType = reflect.TypeOf(element)
+	} else if elementType != s.setType {
 		return false
 	}
 	if _, exists := s.elements[element]; !exists {
