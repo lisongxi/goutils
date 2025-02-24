@@ -24,7 +24,7 @@ func SafeGo(ctx context.Context, fn func()) {
 					err.Error(),
 					string(stack),
 				)
-				// TODO upload error
+				// TODO collect error info
 			}
 		}()
 
