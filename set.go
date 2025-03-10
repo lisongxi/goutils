@@ -40,6 +40,7 @@ func (s *GenericSet) Add(element interface{}) bool {
 		}
 		s.elements[element] = struct{}{}
 		s.setType = reflect.TypeOf(element)
+		return true
 	} else if elementType != s.setType {
 		return false
 	}
